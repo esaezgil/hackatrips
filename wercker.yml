@@ -1,9 +1,7 @@
 box: python:3.6-slim
-services:
-  - redis
 build:
   steps:
     - pip-install
     - script:
-        name: assert
-        code: python test.py
+        name: run app
+        code: python backend/backend.py
