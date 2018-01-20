@@ -1,0 +1,12 @@
+version: '1'
+services:
+    backend:
+        build: ./backend
+        container_name: backend
+        restart: always
+    redis:
+        image: redis
+        container_name: db
+        restart: always
+        ports:
+            - "6379:6379"
