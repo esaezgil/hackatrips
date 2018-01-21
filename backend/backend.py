@@ -5,26 +5,33 @@ from flask import Flask, request
 import requests
 
 from templates.user_infos import user_infos
-from secrets import HC_KEY
+from secrets import HC_KEY, MINUBE_KEY
+from templates.categories import clean_cats
 app = Flask(__name__)
 
 
 HOTELS_COMBINED_AUTOSUGGEST = "http://sandbox.hotelscombined.com/api/2.0/search/full?query={city}&limit=10&languageCode=EN&countryCode=ES&apiKey={apikey}"
 
-HOTELS_COMBINED_SEARCH = "http://sandbox.hotelscombined.com/api/2.0/hotels?destination={user_destination}&checkin={ci}&checkout={co}&rooms={rooms}&apiKey={api_key}&sessionID={session_id}&starRating={starRating}"
+HOTELS_COMBINED_SEARCH = "http://sandbox.hotelscombined.com/api/2.0/hotels?destination={user_destination}&checkin={ci}&checkout={co}&rooms={rooms}&apiKey={api_key}&sessionID={session_id}&starRating={starRating}&ResponseOptions=images"
 
 HOTELS_COMBINED_BOOKING = "https://www.hotelscombined.com/{redirect_path}"
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko)"
 HC_HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko)'}
 
+MI_NUBE = "https://www.minube.net/ajax/call?call_method=ajax/multi_searcher&limit=6&input={input}&api_key={apikey}"
+MINUBE_URL_POIS = "http://papi.minube.com/pois?lang=es&zone_id={zone_id}&order_by=score&api_key={apikey}"
+
+
+# http://sandbox.hotelscombined.com/api/2.0/hotels?destination=place:Barcelona&apikey=AF0C07FC-5E6A-4BD9-B803-AB91710CE02C&sessionid=testsession1&rooms=1&adults_1=2&checkin=2018-02-05&checkout=2018-02-15&ResponseOptions=destination%2Ctoprates%2Cimages
+
 PRICE_SENSITIVITY_MAPPING = {
-    0: 5,
-    1: 4,
-    2: 3,
-    3: 2,
-    2: 1,
-    1: 1
+    '0': 5,
+    '1': 4,
+    '2': 3,
+    '3': 2,
+    '4': 1,
+    '5': 1
 }
 
 
@@ -42,12 +49,32 @@ def get_custom_hotels(city, sensitivity):
     recommended_hotel_cat = PRICE_SENSITIVITY_MAPPING[sensitivity]
     hotel_results = get_hotels_combined_results(place_id, starRating=recommended_hotel_cat)
 
-    # pois =
+    mi_nube_auto_headers = {'X-Requested-With': 'XMLHttpRequest'}
+    mi_nube_url = MI_NUBE.format(input=city, apikey=MINUBE_KEY)
+    mi_nube_respose = requests.get(mi_nube_url, headers = mi_nube_auto_headers)
+    mi_nube_zone_id= json.loads(mi_nube_respose._content)['response']['data'][0]['zone_id']
+
+    mi_nube_url_pois = MINUBE_URL_POIS.format(zone_id=mi_nube_zone_id, apikey=MINUBE_KEY)
+    mi_nube_pois_resp_json = json.loads(requests.get(mi_nube_url_pois)._content)
+
+    pois_list = []
+    for poi in mi_nube_pois_resp_json[0:50]:
+        clean_poi = {}
+        clean_poi['name'] = poi["name"]
+        clean_poi['lat'] = poi["latitude"]
+        clean_poi['long'] = poi["longitude"]
+        clean_poi['image'] = poi['picture_url']
+        clean_poi['subcategory'] = clean_cats[str(poi['subcategory_id'])]
+        pois_list.append(clean_poi)
+
+
+
 
     final_response = {}
     final_response['hotels'] = hotel_results
+    final_response['pois'] = pois_list
     # final_response['pois'] =
-    return json.dumps(hotel_results)
+    return json.dumps(final_response)
 
 
 def get_hotels_combined_place_id(city):
@@ -88,9 +115,18 @@ def get_hotels_combined_results(place_id, guests=2, rooms=1, checkin='2018-04-03
         price, booking_uri = get_hotel_details(hotel['href'])
         cleaned_hotel['price'] = price
         cleaned_hotel['booking_url'] = booking_uri
-        cleaned_hotel_results.append(cleaned_hotel)
+        cleaned_hotel['images'] = extract_images(hotel['images'])
+        cleaned_hotel['description'] = 'great hotel in the city center'
 
+        cleaned_hotel_results.append(cleaned_hotel)
     return cleaned_hotel_results
+
+def extract_images(images_list):
+    clean_images = []
+    for image in images_list[:5]:
+        clean_images.append(image['small'])
+    return clean_images
+
 
 
 def get_hotel_details(href):
