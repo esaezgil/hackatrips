@@ -43,7 +43,7 @@ def hello_world():
 def get_user_info(user_id):
     returned_user_infos = user_infos[user_id]
     returned_user_infos['name'] = user_id
-    return json.dumps(user_infos[returned_user_infos])
+    return json.dumps(returned_user_infos)
 
 @app.route('/search/<city>/<sensitivity>')
 def get_custom_hotels(city, sensitivity):
