@@ -1,10 +1,8 @@
 USERS = ["marcos", "enrique"]
 
 user_infos = {}
-user_infos["marcos"] = \
-    {
-        "user_type": "Single",
-        "cities": [
+
+cities_1 = [
             {
                 "name": "Roma",
                 "img": "http://www.rometransfer.eu/wp-content/uploads/2016/07/promo-01-boscolo-roma.jpg",
@@ -31,13 +29,9 @@ user_infos["marcos"] = \
              "lat": 51.507351,
              "long": -0.127758
              }
-        ],
-        "sensitivity": 0
-    }
-user_infos["pablo"] = \
-    {
-        "user_type": "Family",
-        "cities": [
+        ]
+
+cities_2 = [
             {
                 "name": "Budapest",
                 "img": "https://brightcove04pmdo-a.akamaihd.net/5104226627001/5104226627001_5515999951001_5214933106001-vs.jpg?pubId=5104226627001&videoId=5214933106001",
@@ -64,6 +58,17 @@ user_infos["pablo"] = \
              "lat": 55.676097,
              "long": 12.568337
              }
-        ],
+        ]
+
+user_infos["marcos"] = \
+    {
+        "user_type": "Single",
+        "cities": cities_1,
+        "sensitivity": 0
+    }
+user_infos["pablo"] = \
+    {
+        "user_type": "Family",
+        "cities": cities_2,
         "sensitivity": 0
     }

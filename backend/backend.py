@@ -4,7 +4,7 @@ import uuid
 from flask import Flask, request
 import requests
 
-from templates.user_infos import user_infos
+from templates.user_infos import user_infos, cities_1, cities_2
 from secrets import HC_KEY, MINUBE_KEY
 from templates.categories import clean_cats
 app = Flask(__name__)
@@ -39,9 +39,8 @@ PRICE_SENSITIVITY_MAPPING = {
 def hello_world():
     return 'Hello World!'
 
-@app.route('/user/', methods=['POST', 'GET'])
-def get_user_info():
-    user_id = request.form['username']
+@app.route('/user/<user_id>')
+def get_user_info(user_id):
     return json.dumps(user_infos[user_id])
 
 @app.route('/search/<city>/<sensitivity>')
@@ -68,13 +67,21 @@ def get_custom_hotels(city, sensitivity):
         clean_poi['subcategory'] = clean_cats[str(poi['subcategory_id'])]
         pois_list.append(clean_poi)
 
+    city_info={}
+    city_info['name'] = city
+    cities_1.extend(cities_2)
+    for available_city in cities_1:
+        if available_city['name'].lower() == city.lower():
+            city_info['lat'] = available_city['lat']
+            city_info['long'] = available_city['long']
 
-
+    # final_response['pois'] =
 
     final_response = {}
     final_response['hotels'] = hotel_results
     final_response['pois'] = pois_list
-    # final_response['pois'] =
+    final_response['city']  = city_info
+
     return json.dumps(final_response)
 
 
