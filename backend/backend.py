@@ -132,10 +132,11 @@ def get_hotels_combined_results(place_id, guests=2, rooms=1, checkin='2018-04-03
     return cleaned_hotel_results
 
 def extract_images(images_list):
-    clean_images = []
-    for image in images_list[:5]:
-        clean_images.append(image['small'])
-    return clean_images
+    # clean_images = []
+    # for image in images_list[:1]:
+    #     clean_images.append(image['small'])
+    return images_list[0]['small']
+    # return clean_images
 
 
 
