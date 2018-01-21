@@ -34,7 +34,6 @@ user_infos["marcos"] = \
         ],
         "sensitivity": 0
     }
-user_infos = {}
 user_infos["pablo"] = \
     {
         "user_type": "Family",
