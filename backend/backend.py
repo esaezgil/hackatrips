@@ -39,8 +39,9 @@ PRICE_SENSITIVITY_MAPPING = {
 def hello_world():
     return 'Hello World!'
 
-@app.route('/user/<user_id>')
-def get_user_info(user_id):
+@app.route('/user/', methods=['POST', 'GET'])
+def get_user_info():
+    user_id = request.form['username']
     return json.dumps(user_infos[user_id])
 
 @app.route('/search/<city>/<sensitivity>')
